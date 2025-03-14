@@ -46,5 +46,33 @@ router.post("/register", async (req, res) => {
   return res.status(200).json(userToReturn);
 });
 
+router.post("/login", async (req, res) => {
+  // Bước 1: Lấy email và mật khẩu được người dùng gửi từ req.body
+  const { email, password } = req.body;
+
+  // Bước 2: Kiểm tra xem người dùng có email đã cho có tồn tại không.
+  // Nếu không, thông tin đăng nhập không hợp lệ.
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    return res.status(403).json({ err: "Thông tin đăng nhập không hợp lệ" });
+  }
+
+  console.log(user);
+
+  // Bước 3: Nếu người dùng tồn tại, hãy kiểm tra xem mật khẩu có đúng không.
+  // Nếu không, thông tin đăng nhập không hợp lệ.
+  // bcrypt.compare cho phép chúng tôi so sánh 1 mật khẩu ở dạng plaintext(password from req.body)
+  // với một mật khẩu băm (mật khẩu trong cơ sở dữ liệu) một cách an toàn.
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    return res.status(403).json({ err: "Thông tin đăng nhập không hợp lệ" });
+  }
+
+  // Bước 4: Nếu thông tin đăng nhập chính xác, trả về thông báo cho người dùng.
+  const token = await getToken(user.email, user);
+  const userToReturn = { ...user.toJSON(), token };
+  delete userToReturn.password;
+  return res.status(200).json(userToReturn);
+});
 
 module.exports = router;
