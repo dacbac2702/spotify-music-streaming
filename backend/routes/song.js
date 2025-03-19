@@ -59,4 +59,28 @@ router.get(
   }
 );
 
+// GET /songs/search?artist=Ed Sheeran&title=Shape of You
+router.get("/search", async (req, res) => {
+  try {
+    const { artist, title } = req.query;
+
+    // Tạo điều kiện tìm kiếm động
+    let query = {};
+    if (artist) {
+      query.artist = new RegExp(artist, "i"); // Tìm theo nghệ sĩ (không phân biệt hoa thường)
+    }
+    if (title) {
+      query.title = new RegExp(title, "i"); // Tìm theo tên bài hát (không phân biệt hoa thường)
+    }
+
+    // Tìm kiếm trong MongoDB
+    const songs = await Song.find(query).populate("artist album");
+
+    return res.status(200).json(songs);
+  } catch (error) {
+    console.error("Lỗi khi tìm bài hát:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
 module.exports = router;
