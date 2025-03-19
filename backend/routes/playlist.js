@@ -82,4 +82,62 @@ router.get("/artist/:artistId", async (req, res) => {
   }
 });
 
+// Thêm bài hát vào playlist (Yêu cầu xác thực JWT)
+router.post(
+  "/:playlistId/add-song",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { playlistId } = req.params;
+      const { songId } = req.body;
+      const userId = req.user._id;
+
+      // Kiểm tra ID hợp lệ
+      if (
+        !mongoose.Types.ObjectId.isValid(playlistId) ||
+        !mongoose.Types.ObjectId.isValid(songId)
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Playlist ID hoặc Song ID không hợp lệ" });
+      }
+
+      // Kiểm tra playlist có tồn tại không
+      const playlist = await Playlist.findById(playlistId);
+      if (!playlist) {
+        return res.status(404).json({ error: "Playlist không tồn tại" });
+      }
+
+      // Kiểm tra quyền sở hữu playlist
+      if (playlist.user.toString() !== userId.toString()) {
+        return res
+          .status(403)
+          .json({ error: "Bạn không có quyền sửa playlist này" });
+      }
+
+      // Kiểm tra bài hát có tồn tại không
+      const song = await Song.findById(songId);
+      if (!song) {
+        return res.status(404).json({ error: "Bài hát không tồn tại" });
+      }
+
+      // Kiểm tra bài hát đã có trong playlist chưa
+      if (playlist.songs.includes(songId)) {
+        return res.status(400).json({ error: "Bài hát đã có trong playlist" });
+      }
+
+      // Thêm bài hát vào playlist
+      playlist.songs.push(songId);
+      await playlist.save();
+
+      return res
+        .status(200)
+        .json({ message: "Bài hát đã được thêm vào playlist", playlist });
+    } catch (error) {
+      console.error("Lỗi khi thêm bài hát vào playlist:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
+
 module.exports = router;
