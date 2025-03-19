@@ -7,7 +7,7 @@ const SongSchema = new mongoose.Schema({
     ref: "Artist",
     required: true,
   },
-  album: { type: mongoose.Schema.Types.ObjectId, ref: "Album" },
+  album: { type: String },
   url: { type: String, required: true }, // Đường dẫn nhạc
   coverImage: { type: String }, // Ảnh bìa bài hát
   uploadedBy: {

@@ -57,7 +57,7 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     // Kiểm tra xem user có tồn tại không
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password"); // Bắt buộc lấy password
     if (!user) {
       return res.status(404).json({ error: "Người dùng không tồn tại" });
     }

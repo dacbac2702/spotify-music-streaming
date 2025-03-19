@@ -1,13 +1,11 @@
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const passport = require("passport"); // Import Passport
 const mongoose = require("mongoose");
-const User = require("./models/User");
-const Song = require("./models/Song");
-const Playlist = require("./models/Playlist");
 const authRoutes = require("./routes/auth");
+const songRoutes = require("./routes/song");
 
+require("dotenv").config();
 // Cấu hình Passport
 require("./config/passport")(passport);
 
@@ -19,6 +17,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.use("/auth", authRoutes); // Đăng ký route
+app.use("/songs", songRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {
