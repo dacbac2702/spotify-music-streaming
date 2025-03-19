@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Playlist = require("../models/Playlist");
+const Song = require("../models/Song");
+const Artist = require("../models/Artist");
 const passport = require("passport");
 const router = express.Router();
 
@@ -53,5 +55,31 @@ router.get(
     }
   }
 );
+
+// Lấy danh sách Playlist có bài hát của một nghệ sĩ cụ thể
+router.get("/artist/:artistId", async (req, res) => {
+  try {
+    const { artistId } = req.params;
+
+    // Kiểm tra xem artistId có hợp lệ không
+    if (!mongoose.Types.ObjectId.isValid(artistId)) {
+      return res.status(400).json({ error: "Artist ID không hợp lệ" });
+    }
+
+    // Tìm tất cả bài hát của nghệ sĩ
+    const artistSongs = await Song.find({ artist: artistId }).select("_id");
+    const songIds = artistSongs.map((song) => song._id);
+
+    // Tìm tất cả playlist có chứa bài hát của nghệ sĩ
+    const playlists = await Playlist.find({ songs: { $in: songIds } }).populate(
+      "user songs"
+    );
+
+    return res.status(200).json(playlists);
+  } catch (error) {
+    console.error("Lỗi khi lấy playlist cho nghệ sĩ:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
 
 module.exports = router;
