@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const User = require("./models/User"); // Import User Model
+const Song = require("./models/Song");
+const Playlist = require("./models/Playlist");
 const app = express();
 app.use(cors());
 app.use(express.json());
