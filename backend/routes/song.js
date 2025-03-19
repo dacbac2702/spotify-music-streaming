@@ -10,8 +10,7 @@ router.post(
   passport.authenticate("jwt", { session: false }), // Bảo vệ route bằng JWT
   async (req, res) => {
     try {
-      const { title, artist, album, url, coverImage } =
-        req.body;
+      const { title, artist, album, url, coverImage } = req.body;
       const userId = req.user._id; // Lấy ID của người đăng nhập từ JWT
 
       // Kiểm tra xem đã đủ thông tin chưa
@@ -37,6 +36,24 @@ router.post(
         .json({ message: "Bài hát đã được tạo!", song: newSong });
     } catch (error) {
       console.error("Lỗi khi tạo bài hát:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
+
+// GET /songs/my-songs - Lấy danh sách bài hát của user (Yêu cầu xác thực)
+router.get(
+  "/my-songs",
+  passport.authenticate("jwt", { session: false }), // Xác thực bằng JWT
+  async (req, res) => {
+    try {
+      const userId = req.user._id; // Lấy ID người đăng nhập từ token
+
+      // Tìm tất cả bài hát do user này tải lên
+      const songs = await Song.find({ uploadedBy: userId });
+
+      return res.status(200).json(songs);
+    } catch (error) {
       return res.status(500).json({ error: "Lỗi server" });
     }
   }
