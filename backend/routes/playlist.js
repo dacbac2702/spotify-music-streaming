@@ -140,4 +140,57 @@ router.post(
   }
 );
 
+// Xóa bài hát khỏi playlist (Chỉ chủ sở hữu)
+router.delete(
+  "/:playlistId/remove-song/:songId",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { playlistId, songId } = req.params;
+      const userId = req.user._id;
+
+      // Kiểm tra ID hợp lệ
+      if (
+        !mongoose.Types.ObjectId.isValid(playlistId) ||
+        !mongoose.Types.ObjectId.isValid(songId)
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Playlist ID hoặc Song ID không hợp lệ" });
+      }
+
+      // Tìm playlist trong database
+      const playlist = await Playlist.findById(playlistId);
+      if (!playlist) {
+        return res.status(404).json({ error: "Playlist không tồn tại" });
+      }
+
+      // Kiểm tra quyền sở hữu playlist
+      if (playlist.user.toString() !== userId.toString()) {
+        return res
+          .status(403)
+          .json({ error: "Bạn không có quyền sửa playlist này" });
+      }
+
+      // Kiểm tra bài hát có trong playlist không
+      if (!playlist.songs.includes(songId)) {
+        return res
+          .status(400)
+          .json({ error: "Bài hát không có trong playlist" });
+      }
+
+      // Xóa bài hát khỏi danh sách songs
+      playlist.songs = playlist.songs.filter((id) => id.toString() !== songId);
+      await playlist.save();
+
+      return res
+        .status(200)
+        .json({ message: "Bài hát đã được xóa khỏi playlist", playlist });
+    } catch (error) {
+      console.error("Lỗi khi xóa bài hát khỏi playlist:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
+
 module.exports = router;
