@@ -193,4 +193,90 @@ router.delete(
   }
 );
 
+// Cập nhật tên hoặc trạng thái playlist (Chỉ chủ sở hữu)
+router.put(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, isPublic } = req.body;
+      const userId = req.user._id;
+
+      // Kiểm tra ID hợp lệ
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Playlist ID không hợp lệ" });
+      }
+
+      // Tìm playlist trong database
+      const playlist = await Playlist.findById(id);
+      if (!playlist) {
+        return res.status(404).json({ error: "Playlist không tồn tại" });
+      }
+
+      // Kiểm tra quyền sở hữu playlist
+      if (playlist.user.toString() !== userId.toString()) {
+        return res
+          .status(403)
+          .json({ error: "Bạn không có quyền chỉnh sửa playlist này" });
+      }
+
+      // Cập nhật tên playlist nếu có
+      if (name) {
+        playlist.name = name;
+      }
+
+      // Cập nhật trạng thái công khai nếu có
+      if (typeof isPublic !== "undefined") {
+        playlist.isPublic = isPublic;
+      }
+
+      await playlist.save();
+
+      return res
+        .status(200)
+        .json({ message: "Playlist đã được cập nhật!", playlist });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật playlist:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
+
+// Xóa playlist (Chỉ chủ sở hữu)
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user._id;
+
+      // Kiểm tra ID hợp lệ
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Playlist ID không hợp lệ" });
+      }
+
+      // Tìm playlist trong database
+      const playlist = await Playlist.findById(id);
+      if (!playlist) {
+        return res.status(404).json({ error: "Playlist không tồn tại" });
+      }
+
+      // Kiểm tra quyền sở hữu playlist
+      if (playlist.user.toString() !== userId.toString()) {
+        return res.status(403).json({ error: "Bạn không có quyền xóa playlist này" });
+      }
+
+      // Xóa playlist
+      await Playlist.findByIdAndDelete(id);
+
+      return res.status(200).json({ message: "Playlist đã được xóa thành công" });
+    } catch (error) {
+      console.error("Lỗi khi xóa playlist:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
+
 module.exports = router;
