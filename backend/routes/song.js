@@ -1,4 +1,6 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const mongoose = require("mongoose");
 const Song = require("../models/Song"); // Import model bài hát
 const passport = require("passport");
@@ -90,11 +92,14 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { title, artist, album, genre, duration, url, coverImage } = req.body;
+      const { title, artist, album, genre, duration, url, coverImage } =
+        req.body;
 
       // Kiểm tra xem user có phải admin không
       if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Bạn không có quyền chỉnh sửa bài hát này" });
+        return res
+          .status(403)
+          .json({ error: "Bạn không có quyền chỉnh sửa bài hát này" });
       }
 
       // Kiểm tra ID hợp lệ
@@ -117,7 +122,9 @@ router.put(
 
       await song.save();
 
-      return res.status(200).json({ message: "Bài hát đã được cập nhật!", song });
+      return res
+        .status(200)
+        .json({ message: "Bài hát đã được cập nhật!", song });
     } catch (error) {
       console.error("Lỗi khi cập nhật bài hát:", error);
       return res.status(500).json({ error: "Lỗi server" });
@@ -135,7 +142,9 @@ router.delete(
 
       // Kiểm tra quyền admin
       if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Bạn không có quyền xóa bài hát này" });
+        return res
+          .status(403)
+          .json({ error: "Bạn không có quyền xóa bài hát này" });
       }
 
       // Kiểm tra ID hợp lệ
@@ -152,11 +161,38 @@ router.delete(
       // Xóa bài hát
       await Song.findByIdAndDelete(id);
 
-      return res.status(200).json({ message: "Bài hát đã được xóa thành công" });
+      return res
+        .status(200)
+        .json({ message: "Bài hát đã được xóa thành công" });
     } catch (error) {
       console.error("Lỗi khi xóa bài hát:", error);
       return res.status(500).json({ error: "Lỗi server" });
     }
   }
 );
+
+// API Streaming Nhạc từ Cloudinary
+router.get("/stream/:songId", async (req, res) => {
+  try {
+    const { songId } = req.params;
+
+    // Tìm bài hát theo ID
+    const song = await Song.findById(songId);
+    if (!song) {
+      return res.status(404).json({ error: "Không tìm thấy bài hát" });
+    }
+
+    // Kiểm tra xem URL có tồn tại không
+    if (!song.url) {
+      return res.status(400).json({ error: "Bài hát không có URL hợp lệ" });
+    }
+
+    // Trả về URL trực tiếp để client phát nhạc
+    return res.status(200).json({ streamUrl: song.url });
+  } catch (error) {
+    console.error("Lỗi khi phát nhạc:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
 module.exports = router;

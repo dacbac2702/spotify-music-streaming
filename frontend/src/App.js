@@ -1,23 +1,11 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import MusicPlayer from "./components/MusicPlayer";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <h1 className="text-3xl font-bold mb-4">🎵 My Music App</h1>
+      <MusicPlayer songId="67dc54b0bfce6eb73d2aa038" />
     </div>
   );
 }
