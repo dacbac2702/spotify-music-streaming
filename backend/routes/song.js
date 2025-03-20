@@ -83,4 +83,80 @@ router.get("/search", async (req, res) => {
   }
 });
 
+// Cập nhật thông tin bài hát (Chỉ Admin)
+router.put(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { title, artist, album, genre, duration, url, coverImage } = req.body;
+
+      // Kiểm tra xem user có phải admin không
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Bạn không có quyền chỉnh sửa bài hát này" });
+      }
+
+      // Kiểm tra ID hợp lệ
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Song ID không hợp lệ" });
+      }
+
+      // Tìm bài hát theo ID
+      let song = await Song.findById(id);
+      if (!song) {
+        return res.status(404).json({ error: "Không tìm thấy bài hát" });
+      }
+
+      // Cập nhật bài hát
+      song.title = title || song.title;
+      song.artist = artist || song.artist;
+      song.album = album || song.album;
+      song.url = url || song.url;
+      song.coverImage = coverImage || song.coverImage;
+
+      await song.save();
+
+      return res.status(200).json({ message: "Bài hát đã được cập nhật!", song });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật bài hát:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
+
+// Xóa bài hát (Chỉ Admin)
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Kiểm tra quyền admin
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Bạn không có quyền xóa bài hát này" });
+      }
+
+      // Kiểm tra ID hợp lệ
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Song ID không hợp lệ" });
+      }
+
+      // Tìm bài hát theo ID
+      const song = await Song.findById(id);
+      if (!song) {
+        return res.status(404).json({ error: "Không tìm thấy bài hát" });
+      }
+
+      // Xóa bài hát
+      await Song.findByIdAndDelete(id);
+
+      return res.status(200).json({ message: "Bài hát đã được xóa thành công" });
+    } catch (error) {
+      console.error("Lỗi khi xóa bài hát:", error);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
+);
 module.exports = router;
