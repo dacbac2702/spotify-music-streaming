@@ -56,6 +56,35 @@ router.get(
   }
 );
 
+// API Lấy Playlist Theo ID
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Kiểm tra ID có hợp lệ không
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "ID playlist không hợp lệ" });
+    }
+
+    // Tìm playlist theo ID và populate thông tin người tạo & bài hát
+    const playlist = await Playlist.findById(id)
+      .populate("user", "username email") // Lấy thông tin người tạo playlist
+      .populate({
+        path: "songs",
+        populate: { path: "artist", select: "name" }, // Lấy thông tin nghệ sĩ cho từng bài hát
+      });
+
+    if (!playlist) {
+      return res.status(404).json({ error: "Không tìm thấy playlist" });
+    }
+
+    return res.status(200).json(playlist);
+  } catch (error) {
+    console.error("Lỗi khi lấy playlist:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
 // Lấy danh sách Playlist có bài hát của một nghệ sĩ cụ thể
 router.get("/artist/:artistId", async (req, res) => {
   try {
@@ -265,13 +294,17 @@ router.delete(
 
       // Kiểm tra quyền sở hữu playlist
       if (playlist.user.toString() !== userId.toString()) {
-        return res.status(403).json({ error: "Bạn không có quyền xóa playlist này" });
+        return res
+          .status(403)
+          .json({ error: "Bạn không có quyền xóa playlist này" });
       }
 
       // Xóa playlist
       await Playlist.findByIdAndDelete(id);
 
-      return res.status(200).json({ message: "Playlist đã được xóa thành công" });
+      return res
+        .status(200)
+        .json({ message: "Playlist đã được xóa thành công" });
     } catch (error) {
       console.error("Lỗi khi xóa playlist:", error);
       return res.status(500).json({ error: "Lỗi server" });
