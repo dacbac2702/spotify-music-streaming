@@ -43,23 +43,16 @@ router.post(
   }
 );
 
-// GET /songs/my-songs - Lấy danh sách bài hát của user (Yêu cầu xác thực)
-router.get(
-  "/my-songs",
-  passport.authenticate("jwt", { session: false }), // Xác thực bằng JWT
-  async (req, res) => {
-    try {
-      const userId = req.user._id; // Lấy ID người đăng nhập từ token
-
-      // Tìm tất cả bài hát do user này tải lên
-      const songs = await Song.find({ uploadedBy: userId });
-
-      return res.status(200).json(songs);
-    } catch (error) {
-      return res.status(500).json({ error: "Lỗi server" });
-    }
+// API Lấy Danh Sách Bài Hát
+router.get("/", async (req, res) => {
+  try {
+    const songs = await Song.find().populate("artist album");
+    return res.status(200).json(songs);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách bài hát:", error);
+    return res.status(500).json({ error: "Lỗi server" });
   }
-);
+});
 
 // GET /songs/search?artist=Ed Sheeran&title=Shape of You
 router.get("/search", async (req, res) => {
