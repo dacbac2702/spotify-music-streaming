@@ -54,6 +54,29 @@ router.get("/", async (req, res) => {
   }
 });
 
+// API Lấy Bài Hát Theo ID
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Kiểm tra ID có hợp lệ không
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "ID bài hát không hợp lệ" });
+    }
+
+    // Tìm bài hát theo ID
+    const song = await Song.findById(id).populate("artist album");
+    if (!song) {
+      return res.status(404).json({ error: "Không tìm thấy bài hát" });
+    }
+
+    return res.status(200).json(song);
+  } catch (error) {
+    console.error("Lỗi khi lấy bài hát:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
 // GET /songs/search?artist=Ed Sheeran&title=Shape of You
 router.get("/search", async (req, res) => {
   try {
