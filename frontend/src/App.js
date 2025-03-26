@@ -1,13 +1,16 @@
 import React from "react";
 import Header from "./components/Header";
 import Navbar from "./components/Navbar";
+import MainContent from "./components/MainContent";
 
 function App() {
   return (
     <div className="bg-black min-h-screen">
       <Header />
-      <Navbar />
-      <main className="p-6 text-white"> {/* Nội dung trang ở đây */} </main>
+      <div className="flex">
+        <Navbar />
+        <MainContent className="flex-1" />
+      </div>
     </div>
   );
 }
