@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Navbar from "./components/Navbar";
 import MainContent from "./components/MainContent";
 import Footer from "./components/Footer";
+import MusicPlayer from "./components/MusicPlayer";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Footer />
         </div>
       </div>
+      <MusicPlayer />
     </div>
   );
 }
