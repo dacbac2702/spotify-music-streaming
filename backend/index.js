@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const songRoutes = require("./routes/song");
 const playlistRoutes = require("./routes/playlist");
-const artistRoutes = require("./routes/artist");
 
 require("dotenv").config();
 // Cấu hình Passport
@@ -21,7 +20,6 @@ app.use(passport.initialize());
 app.use("/auth", authRoutes); // Đăng ký route
 app.use("/songs", songRoutes);
 app.use("/playlists", playlistRoutes);
-app.use("/artists", artistRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {

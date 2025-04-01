@@ -48,7 +48,7 @@ const MainContent = () => {
                   />
                 </div>
                 <h3 className="mt-2 text-lg font-semibold">{song.title}</h3>
-                <p className="text-gray-400">{song.artist.name}</p>
+                <p className="text-gray-400">{song.artist}</p>
               </div>
             ))
           ) : (

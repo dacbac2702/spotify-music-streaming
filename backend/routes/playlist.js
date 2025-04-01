@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Playlist = require("../models/Playlist");
 const Song = require("../models/Song");
-const Artist = require("../models/Artist");
 const passport = require("passport");
 const router = express.Router();
 
