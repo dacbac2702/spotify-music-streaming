@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearch } from "../context/SearchContext";
+import { usePlayer } from "../context/PlayerContext";
 
 const MainContent = () => {
   const categories = ["Tất cả", "Âm nhạc", "Podcasts"];
@@ -14,6 +15,13 @@ const MainContent = () => {
   }, []);
 
   const displaySongs = isSearching ? searchResults : songs;
+
+  const { setCurrentSong, setIsPlaying } = usePlayer();
+
+  const handleSongClick = (song) => {
+    setCurrentSong(song);
+    setIsPlaying(true);
+  };
 
   return (
     <div className="flex-1 p-6 bg-gradient-to-b from-green-900 to-black text-white overflow-y-auto">
@@ -51,6 +59,7 @@ const MainContent = () => {
               <div
                 key={song._id}
                 className="bg-gray-900 p-4 rounded-lg hover:bg-gray-800 transition cursor-pointer"
+                onClick={() => handleSongClick(song)}
               >
                 <div className="w-full aspect-square overflow-hidden rounded-lg">
                   <img
@@ -63,7 +72,9 @@ const MainContent = () => {
                   {song.title}
                 </h3>
                 <p className="text-gray-400 truncate">{song.artist}</p>
-                {song.album && <p className="text-gray-500 text-sm truncate">{song.album}</p>}
+                {song.album && (
+                  <p className="text-gray-500 text-sm truncate">{song.album}</p>
+                )}
               </div>
             ))
           ) : (

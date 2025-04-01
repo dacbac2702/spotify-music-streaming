@@ -5,21 +5,24 @@ import MainContent from "./components/MainContent";
 import Footer from "./components/Footer";
 import MusicPlayer from "./components/MusicPlayer";
 import { SearchProvider } from "./context/SearchContext";
+import { PlayerProvider } from "./context/PlayerContext";
 
 function App() {
   return (
     <SearchProvider>
-      <div className="bg-black min-h-screen">
-        <Header />
-        <div className="flex">
-          <Navbar />
-          <div className="flex flex-col flex-1 min-h-screen">
-            <MainContent />
-            <Footer />
+      <PlayerProvider>
+        <div className="bg-black min-h-screen">
+          <Header />
+          <div className="flex">
+            <Navbar />
+            <div className="flex flex-col flex-1 min-h-screen">
+              <MainContent />
+              <Footer />
+            </div>
           </div>
+          <MusicPlayer />
         </div>
-        <MusicPlayer />
-      </div>
+      </PlayerProvider>
     </SearchProvider>
   );
 }

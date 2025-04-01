@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { usePlayer } from "../context/PlayerContext";
 import {
   FaPlay,
   FaPause,
@@ -10,29 +11,61 @@ import {
 } from "react-icons/fa";
 
 const MusicPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
+  const { currentSong, isPlaying, setIsPlaying } = usePlayer();
   const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef(null);
 
-  const togglePlayPause = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+  // Xử lý khi currentSong thay đổi
+  useEffect(() => {
+    if (currentSong && audioRef.current) {
+      audioRef.current.src = currentSong.url;
+      if (isPlaying) {
+        audioRef.current.play();
+      }
     }
+  }, [currentSong]);
+
+  // Xử lý play/pause
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
+
+  const togglePlayPause = () => {
     setIsPlaying(!isPlaying);
   };
 
-  const toggleRepeat = () => {
-    setIsRepeat(!isRepeat);
-    audioRef.current.loop = !isRepeat;
+  // Cập nhật thanh tiến trình
+  const handleTimeUpdate = () => {
+    const duration = audioRef.current.duration;
+    const currentTime = audioRef.current.currentTime;
+    setDuration(duration);
+    setCurrentTime(currentTime);
+    setProgress((currentTime / duration) * 100);
   };
 
-  const handleProgress = (e) => {
+  // Xử lý khi kéo thanh tiến trình
+  const handleProgressChange = (e) => {
     const value = e.target.value;
     setProgress(value);
-    audioRef.current.currentTime = (audioRef.current.duration * value) / 100;
+    if (audioRef.current) {
+      audioRef.current.currentTime = (audioRef.current.duration * value) / 100;
+    }
+  };
+
+  // Format thời gian (phút:giây)
+  const formatTime = (time) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   return (
@@ -40,15 +73,17 @@ const MusicPlayer = () => {
       {/* Left - Song Info */}
       <div className="flex items-center space-x-4 w-1/3">
         <img
-          src="https://res.cloudinary.com/dcbqh6tx4/image/upload/v1742561662/images_udpez1.jpg"
+          src={currentSong?.coverImage || "https://via.placeholder.com/150"}
           alt="Album Art"
           className="w-14 h-14 object-cover rounded-lg"
         />
         <div>
           <h3 className="text-sm font-bold">
-          Winner Takes All (Full Length)
+            {currentSong?.title || "Không có bài hát"}
           </h3>
-          <p className="text-xs text-gray-400">Songs To Your Eyes</p>
+          <p className="text-xs text-gray-400">
+            {currentSong?.artist || "Nghệ sĩ không xác định"}
+          </p>
         </div>
       </div>
 
@@ -64,25 +99,20 @@ const MusicPlayer = () => {
             {isPlaying ? <FaPause size={20} /> : <FaPlay size={20} />}
           </button>
           <FaStepForward className="text-gray-300 cursor-pointer hover:text-white" />
-          <FaRedo
-            className={`cursor-pointer ${
-              isRepeat ? "text-green-500" : "text-gray-500"
-            } hover:text-white`}
-            onClick={toggleRepeat}
-          />
+          <FaRedo className="text-gray-500 cursor-pointer hover:text-white" />
         </div>
         {/* Progress Bar */}
         <div className="flex items-center w-full mt-2">
-          <span className="text-xs">0:00</span>
+          <span className="text-xs">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max="100"
             value={progress}
-            onChange={handleProgress}
+            onChange={handleProgressChange}
             className="w-full mx-2 cursor-pointer"
           />
-          <span className="text-xs">3:15</span>
+          <span className="text-xs">{formatTime(duration)}</span>
         </div>
       </div>
 
@@ -93,7 +123,12 @@ const MusicPlayer = () => {
       </div>
 
       {/* Audio Element */}
-      <audio ref={audioRef} src="https://example.com/song.mp3"></audio>
+      <audio
+        ref={audioRef}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={() => setIsPlaying(false)}
+        hidden
+      />
     </div>
   );
 };
