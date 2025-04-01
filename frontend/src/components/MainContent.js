@@ -6,6 +6,7 @@ const MainContent = () => {
   const categories = ["Tất cả", "Âm nhạc", "Podcasts"];
   const [songs, setSongs] = useState([]);
   const { searchResults, isSearching } = useSearch();
+  const { playSong } = usePlayer();
 
   useEffect(() => {
     fetch("http://localhost:5000/songs")
@@ -19,8 +20,7 @@ const MainContent = () => {
   const { setCurrentSong, setIsPlaying } = usePlayer();
 
   const handleSongClick = (song) => {
-    setCurrentSong(song);
-    setIsPlaying(true);
+    playSong(song, displaySongs); // Truyền cả bài hát và danh sách hiện tại
   };
 
   return (
