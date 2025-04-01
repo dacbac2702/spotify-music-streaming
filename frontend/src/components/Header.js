@@ -1,8 +1,43 @@
 import { FaSearch, FaBell } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { IoHomeSharp } from "react-icons/io5";
+import { useState } from "react";
+import { useSearch } from "../context/SearchContext";
 
 const Header = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const { setSearchResults, setIsSearching } = useSearch();
+
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    fetch(
+      `http://localhost:5000/songs/search?title=${encodeURIComponent(
+        searchTerm
+      )}`
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Lỗi API");
+        return response.json();
+      })
+      .then((data) => {
+        setSearchResults(data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi tìm kiếm:", error);
+        setSearchResults([]);
+      });
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
   return (
     <div className="bg-black text-white flex items-center justify-between px-6 py-2 w-full">
       {/* Left Section */}
@@ -23,8 +58,14 @@ const Header = () => {
             type="text"
             placeholder="Bạn muốn phát nội dung gì?"
             className="bg-gray text-black px-4 py-2 rounded-full pl-10 w-full focus:outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={handleKeyPress}
           />
-          <FaSearch className="absolute left-3 top-3 text-gray-400" />
+          <FaSearch
+            className="absolute left-3 top-3 text-gray-400 cursor-pointer"
+            onClick={handleSearch}
+          />
         </div>
       </div>
 

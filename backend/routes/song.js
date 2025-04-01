@@ -54,45 +54,28 @@ router.get("/", async (req, res) => {
   }
 });
 
-// API Lấy Bài Hát Theo ID
-router.get("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Kiểm tra ID có hợp lệ không
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "ID bài hát không hợp lệ" });
-    }
-
-    // Tìm bài hát theo ID
-    const song = await Song.findById(id).populate("artist album");
-    if (!song) {
-      return res.status(404).json({ error: "Không tìm thấy bài hát" });
-    }
-
-    return res.status(200).json(song);
-  } catch (error) {
-    console.error("Lỗi khi lấy bài hát:", error);
-    return res.status(500).json({ error: "Lỗi server" });
-  }
-});
-
 // GET /songs/search?artist=Ed Sheeran&title=Shape of You
 router.get("/search", async (req, res) => {
   try {
-    const { artist, title } = req.query;
+    const { title, artist, album } = req.query;
 
     // Tạo điều kiện tìm kiếm động
     let query = {};
-    if (artist) {
-      query.artist = new RegExp(artist, "i"); // Tìm theo nghệ sĩ (không phân biệt hoa thường)
-    }
+
     if (title) {
       query.title = new RegExp(title, "i"); // Tìm theo tên bài hát (không phân biệt hoa thường)
     }
 
-    // Tìm kiếm trong MongoDB
-    const songs = await Song.find(query).populate("artist album");
+    if (artist) {
+      query.artist = new RegExp(artist, "i"); // Tìm theo nghệ sĩ (không phân biệt hoa thường)
+    }
+
+    if (album) {
+      query.album = new RegExp(album, "i"); // Tìm theo album (không phân biệt hoa thường)
+    }
+
+    // Thực hiện truy vấn MongoDB
+    const songs = await Song.find(query);
 
     return res.status(200).json(songs);
   } catch (error) {
