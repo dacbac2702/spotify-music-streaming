@@ -1,6 +1,63 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { toast } from "react-toastify";
+import FormInput from "../components/FormInput";
+import PasswordInput from "../components/PasswordInput";
 
 const Register = () => {
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+  });
+
+  const firstInputRef = useRef(null);
+  useEffect(() => {
+    firstInputRef.current?.focus();
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (form.password !== form.passwordConfirm) {
+      toast.error("Mật khẩu không khớp!");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Đăng ký thất bại!");
+        return;
+      }
+
+      toast.success("Đăng ký thành công!");
+      setForm({
+        firstName: "",
+        lastName: "",
+        username: "",
+        email: "",
+        password: "",
+        passwordConfirm: "",
+      });
+    } catch (err) {
+      toast.error("Lỗi kết nối đến máy chủ!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex justify-center items-center">
       <div className="max-w-md w-full flex flex-col items-center text-center">
@@ -10,93 +67,61 @@ const Register = () => {
           className="w-16 h-16 mb-1"
         />
         <h1 className="text-3xl font-bold mb-2">Đăng ký để bắt đầu nghe</h1>
-        <form className="w-full text-left capitalize">
-          <div className="mb-4">
-            <label
-              htmlFor="lastName"
-              className="block text-sm font-semibold mb-1"
-            >
-              Họ
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              placeholder="Họ"
-              className="w-full p-2 rounded border border-gray-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring focus:ring-green-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="firstName"
-              className="block text-sm font-semibold mb-1"
-            >
-              Tên
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              placeholder="Tên"
-              className="w-full p-2 rounded border border-gray-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring focus:ring-green-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="username"
-              className="block text-sm font-semibold mb-1"
-            >
-              Tên người dùng
-            </label>
-            <input
-              type="text"
-              id="username"
-              placeholder="Tên người dùng"
-              className="w-full p-2 rounded border border-gray-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring focus:ring-green-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-semibold mb-1">
-              Địa chỉ email
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="Địa chỉ email"
-              className="w-full p-2 rounded border border-gray-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring focus:ring-green-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-sm font-semibold mb-1"
-            >
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Mật khẩu"
-              className="w-full p-2 rounded border border-gray-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring focus:ring-green-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="passwordConfirm"
-              className="block text-sm font-semibold mb-1"
-            >
-              Xác nhận mật khẩu
-            </label>
-            <input
-              type="password"
-              id="passwordConfirm"
-              placeholder="Xác nhận mật khẩu"
-              className="w-full p-2 rounded border border-gray-700 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring focus:ring-green-500"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="w-full text-left capitalize">
+          <FormInput
+            id="lastName"
+            label="Họ"
+            value={form.lastName}
+            onChange={handleChange}
+            placeholder="Họ"
+            inputRef={firstInputRef}
+          />
 
-          <button className="w-full bg-green-500 hover:bg-green-600 transition rounded-full py-3 font-bold my-2">
+          <FormInput
+            id="firstName"
+            label="Tên"
+            value={form.firstName}
+            onChange={handleChange}
+            placeholder="Tên"
+          />
+          <FormInput
+            id="username"
+            label="Tên người dùng"
+            value={form.username}
+            onChange={handleChange}
+            placeholder="Tên người dùng"
+          />
+          <FormInput
+            id="email"
+            type="email"
+            label="Email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Email"
+          />
+          <PasswordInput
+            id="password"
+            label="Mật khẩu"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Mật khẩu"
+          />
+          <PasswordInput
+            id="passwordConfirm"
+            label="Xác nhận mật khẩu"
+            value={form.passwordConfirm}
+            onChange={handleChange}
+            placeholder="Nhập lại mật khẩu"
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-green-500 hover:bg-green-600 transition rounded-full py-3 font-bold my-2"
+          >
             Đăng ký
           </button>
         </form>
+
         <div className="flex items-center my-4 w-full">
           <hr className="flex-grow border-gray-700" />
           <hr className="flex-grow border-gray-700" />
@@ -104,7 +129,10 @@ const Register = () => {
 
         <p className="text-sm text-gray-400 mb-4">
           Bạn đã có tài khoản?{" "}
-          <a href="#" className="text-white underline hover:text-green-500">
+          <a
+            href="/login"
+            className="text-white underline hover:text-green-500"
+          >
             Đăng nhập tại đây.
           </a>
         </p>

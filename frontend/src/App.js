@@ -8,43 +8,48 @@ import MusicPlayer from "./components/MusicPlayer";
 import { SearchProvider } from "./context/SearchContext";
 import { PlayerProvider } from "./context/PlayerContext";
 import Register from "./pages/Register";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
-    <SearchProvider>
-      <PlayerProvider>
-        <Router>
-          <div className="bg-black min-h-screen">
-            <Routes>
-              <Route
-                path="/register"
-                element={
-                  <>
-                    <Register />
-                  </>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <>
-                    <Header />
-                    <div className="flex">
-                      <Navbar />
-                      <div className="flex flex-col flex-1 min-h-screen">
-                        <MainContent />
-                        <Footer />
+    <>
+      <SearchProvider>
+        <PlayerProvider>
+          <Router>
+            <div className="bg-black min-h-screen">
+              <Routes>
+                <Route
+                  path="/register"
+                  element={
+                    <>
+                      <Register />
+                    </>
+                  }
+                />
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <Header />
+                      <div className="flex">
+                        <Navbar />
+                        <div className="flex flex-col flex-1 min-h-screen">
+                          <MainContent />
+                          <Footer />
+                        </div>
                       </div>
-                    </div>
-                    <MusicPlayer />
-                  </>
-                }
-              />
-            </Routes>
-          </div>
-        </Router>
-      </PlayerProvider>
-    </SearchProvider>
+                      <MusicPlayer />
+                    </>
+                  }
+                />
+              </Routes>
+            </div>
+          </Router>
+        </PlayerProvider>
+      </SearchProvider>
+      <ToastContainer position="top-center" autoClose={3000} theme="light" />
+    </>
   );
 }
 
