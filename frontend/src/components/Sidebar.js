@@ -1,6 +1,6 @@
 import { FaPlus, FaArrowRight } from "react-icons/fa";
 
-const Navbar = () => {
+const Sidebar = () => {
   const playlists = [
     {
       name: "ROSÉ",
@@ -74,4 +74,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Sidebar;
