@@ -1,12 +1,28 @@
 import { FaSearch, FaBell } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { IoHomeSharp } from "react-icons/io5";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearch } from "../context/SearchContext";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { setSearchResults, setIsSearching } = useSearch();
+
+  const [user, setUser] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.reload(); // hoặc navigate("/login")
+  };
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
@@ -71,26 +87,61 @@ const Header = () => {
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
-        {/* Premium Button */}
-        <button className="bg-white text-black px-4 py-2 rounded-full font-semibold">
-          Khám phá Premium
-        </button>
-
-        {/* Download Icon */}
+        {!user && (
+          <button className="bg-white text-black px-4 py-2 rounded-full font-semibold">
+            Khám phá Premium
+          </button>
+        )}
         <div className="flex items-center text-gray-300 cursor-pointer">
           <IoMdDownload className="text-xl" />
           <span className="text-sm ml-1 font-semibold">Cài đặt Ứng dụng</span>
         </div>
+        {!user ? (
+          <>
+            <div className="flex gap-4">
+              <a
+                href="/register"
+                className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition"
+              >
+                Đăng ký
+              </a>
+              <a
+                href="/login"
+                className="bg-white text-black px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Đăng nhập
+              </a>
+            </div>
+          </>
+        ) : (
+          <>
+            <FaBell className="text-xl cursor-pointer" />
+            <div className="relative">
+              <div className="flex items-center gap-2">
+                <img
+                  src={user.avatar}
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full cursor-pointer"
+                  onClick={() => setShowMenu(!showMenu)}
+                />
+              </div>
 
-        {/* Notification Icon */}
-        <FaBell className="text-xl cursor-pointer" />
-
-        {/* User Avatar */}
-        <img
-          src="https://res.cloudinary.com/dcbqh6tx4/image/upload/v1742934355/vdb_avatar_vwgaax.jpg"
-          alt="User Avatar"
-          className="w-8 h-8 rounded-full"
-        />
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-neutral-900 text-white rounded shadow-md z-10">
+                  <div className="px-4 py-2 border-b font-semibold">
+                    Xin chào, {user.username}
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 hover:bg-neutral-500"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

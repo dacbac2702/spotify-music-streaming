@@ -33,10 +33,12 @@ const Login = () => {
       });
 
       const data = await res.json();
-
+      console.log("Server response:", data);
       if (res.ok) {
         toast.success("Đăng nhập thành công!");
-        navigate("/home");
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/");
       } else {
         toast.error(data.message || "Đăng nhập thất bại");
       }

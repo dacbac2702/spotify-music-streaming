@@ -74,7 +74,15 @@ router.post("/login", async (req, res) => {
       expiresIn: "1d",
     });
 
-    return res.status(200).json({ token });
+    return res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar || `https://i.pravatar.cc/150?u=${user._id}`,
+      },
+    });
   } catch (error) {
     console.error("Lỗi đăng nhập:", error);
     return res.status(500).json({ error: "Lỗi server" });
